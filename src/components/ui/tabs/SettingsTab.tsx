@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import { getBitrefillApiKey, setBitrefillApiKey } from "~/lib/bitrefillApiKey";
 import { BitrefillApiCheck } from "../BitrefillApiCheck";
+import { BitrefillBalance } from "../BitrefillBalance";
 
 export function SettingsTab() {
   const [apiKey, setApiKey] = useState("");
@@ -59,6 +60,11 @@ export function SettingsTab() {
       {!saved && (
         <div className="mt-4">
           <BitrefillApiCheck />
+        </div>
+      )}
+      {!saved && (
+        <div className="mt-4">
+          <BitrefillBalance />
         </div>
       )}
     </div>

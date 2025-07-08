@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const BITREFILL_BASE = "https://api.bitrefill.com/v2/";
+// const BITREFILL_BASE = "https://api.staging.bitrefill.com/v2/";
 
 export async function GET(
   req: NextRequest,
