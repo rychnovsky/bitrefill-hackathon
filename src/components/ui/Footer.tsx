@@ -36,6 +36,17 @@ export const Footer: React.FC<FooterProps> = ({
         <span className="text-xl">💡</span>
         <span className="text-xs mt-1">How it works</span>
       </button>
+      <button
+        onClick={() => setActiveTab(Tab.Settings)}
+        className={`flex flex-col items-center justify-center w-full h-full ${
+          activeTab === Tab.Settings
+            ? "text-primary dark:text-primary-light"
+            : "text-gray-500 dark:text-gray-400"
+        }`}
+      >
+        <span className="text-xl">⚙️</span>
+        <span className="text-xs mt-1">Settings</span>
+      </button>
       {/* <button
         onClick={() => setActiveTab(Tab.Actions)}
         className={`flex flex-col items-center justify-center w-full h-full ${

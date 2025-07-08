@@ -10,6 +10,7 @@ import {
   ContextTab,
   WalletTab,
   HowItWorksTab,
+  SettingsTab,
 } from "~/components/ui/tabs";
 import { USE_WALLET } from "~/lib/constants";
 import { useNeynarUser } from "../hooks/useNeynarUser";
@@ -21,6 +22,7 @@ export enum Tab {
   Context = "context",
   Wallet = "wallet",
   HowItWorks = "how-it-works",
+  Settings = "settings",
 }
 
 export interface AppProps {
@@ -116,6 +118,7 @@ export default function App(
         {currentTab === Tab.Context && <ContextTab />}
         {currentTab === Tab.Wallet && <WalletTab />}
         {currentTab === Tab.HowItWorks && <HowItWorksTab />}
+        {currentTab === Tab.Settings && <SettingsTab />}
 
         {/* Footer with navigation */}
         <Footer
