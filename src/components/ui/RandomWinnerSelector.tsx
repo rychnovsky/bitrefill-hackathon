@@ -6,22 +6,25 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function getDisplayName(item: unknown): string {
+function extractFid(item: unknown): number | null {
   if (typeof item === "object" && item !== null) {
     const obj = item as { [key: string]: unknown };
-    if (typeof obj.username === "string") return `@${obj.username}`;
-    if (typeof obj.display_name === "string") return obj.display_name;
-    if (typeof obj.fid === "number" || typeof obj.fid === "string")
-      return `FID: ${obj.fid}`;
+    if (typeof obj.fid === "number") return obj.fid;
+    if (typeof obj.fid === "string") return parseInt(obj.fid, 10);
     if (typeof obj.user === "object" && obj.user !== null) {
       const user = obj.user as { [key: string]: unknown };
-      if (typeof user.username === "string") return `@${user.username}`;
-      if (typeof user.fid === "number" || typeof user.fid === "string")
-        return `FID: ${user.fid}`;
+      if (typeof user.fid === "number") return user.fid;
+      if (typeof user.fid === "string") return parseInt(user.fid, 10);
     }
-    return JSON.stringify(obj);
   }
-  return typeof item === "string" ? item : JSON.stringify(item);
+  return null;
+}
+
+// Add WinnerUser type
+interface WinnerUser {
+  username?: string;
+  display_name?: string;
+  fid?: number | string;
 }
 
 export function RandomWinnerSelector({
@@ -40,6 +43,8 @@ export function RandomWinnerSelector({
   const [error, setError] = useState<string | null>(null);
   const [items, setItems] = useState<unknown[]>([]);
   const [winner, setWinner] = useState<unknown | null>(null);
+  const [winnerDetails, setWinnerDetails] = useState<unknown | null>(null);
+  const [loadingWinnerDetails, setLoadingWinnerDetails] = useState(false);
 
   useEffect(() => {
     if (!channelId) return;
@@ -114,35 +119,87 @@ export function RandomWinnerSelector({
     pickWinner();
   }, [pickWinner]);
 
+  // Fetch winner details when winner is selected
+  useEffect(() => {
+    if (!winner) return;
+    const fid = extractFid(winner);
+    if (!fid) return;
+    setLoadingWinnerDetails(true);
+    fetch(`/api/users?fids=${fid}`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch user details");
+        return res.json();
+      })
+      .then((data) => {
+        if (data.users && data.users.length > 0) {
+          setWinnerDetails(data.users[0]);
+        }
+      })
+      .catch(() => {
+        setWinnerDetails(null);
+      })
+      .finally(() => {
+        setLoadingWinnerDetails(false);
+      });
+  }, [winner]);
+
   if (!channelId) return null;
 
-  if (loading)
-    return (
-      <div className="mb-4 mt-4">
-        Loading {mode}
-        <br />
-        this may take a while...
-      </div>
-    );
-
-  if (error)
-    return (
-      <div className="mb-4 mt-4 text-red-500">
-        Error: {error}
-        <br />
-        Please try again.
-      </div>
-    );
+  const renderWinnerDetails = () => {
+    if (loadingWinnerDetails || loading) {
+      return <div className="">Loading winner details...</div>;
+    }
+    if (error) {
+      return <div className="text-red-500">Error: {error}</div>;
+    }
+    if (
+      winnerDetails &&
+      typeof winnerDetails === "object" &&
+      winnerDetails !== null
+    ) {
+      return (
+        <>
+          <h2 className="text-lg font-bold mb-4">Winner Selected!</h2>
+          <div className="text-sm text-gray-600 mb-4">
+            Channel {mode.charAt(0).toUpperCase() + mode.slice(1)}: {count}
+          </div>
+          {loadingWinnerDetails ? (
+            <div className="text-blue-600">Loading winner details...</div>
+          ) : winnerDetails &&
+            typeof winnerDetails === "object" &&
+            winnerDetails !== null ? (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="text-lg font-bold text-green-800 mb-2">
+                🎉 Winner
+              </div>
+              <div className="text-green-700 text-sm">
+                {(() => {
+                  const user = winnerDetails as WinnerUser;
+                  return (
+                    <>
+                      {user.username && <div>Username: @{user.username}</div>}
+                      {user.display_name && (
+                        <div>Name: {user.display_name}</div>
+                      )}
+                      {user.fid && <div>FID: {user.fid}</div>}
+                    </>
+                  );
+                })()}
+              </div>
+            </div>
+          ) : (
+            <div className="text-gray-600">No winner details available</div>
+          )}
+        </>
+      );
+    }
+    return null;
+  };
 
   return (
-    <div className="mt-4 mb-4 text-xl font-semibold border-2 border-gray-300 rounded-lg p-4">
-      Channel {mode.charAt(0).toUpperCase() + mode.slice(1)}: {count}
-      {winner ? (
-        <div className="mt-4 text-lg text-blue-700">
-          Winner: {String(getDisplayName(winner))}
-        </div>
-      ) : null}
-      <button className="mt-4 px-4 py-2 text-red-600 text-sm" onClick={onReset}>
+    <div className="mt-4 mb-4 text-xl font-semibold border-[1px] border-gray-800 rounded-lg p-4 py-8">
+      {renderWinnerDetails()}
+      <button className="mt-4 px-4 py-0 text-red-600 text-sm" onClick={onReset}>
         X Reset
       </button>
     </div>
