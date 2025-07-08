@@ -1,16 +1,20 @@
-import { NeynarAPIClient, Configuration, WebhookUserCreated } from '@neynar/nodejs-sdk';
-import { APP_URL } from './constants';
+import {
+  NeynarAPIClient,
+  Configuration,
+  WebhookUserCreated,
+} from "@neynar/nodejs-sdk";
+import { APP_URL } from "./constants";
 
 let neynarClient: NeynarAPIClient | null = null;
 
 // Example usage:
 // const client = getNeynarClient();
-// const user = await client.lookupUserByFid(fid); 
+// const user = await client.lookupUserByFid(fid);
 export function getNeynarClient() {
   if (!neynarClient) {
     const apiKey = process.env.NEYNAR_API_KEY;
     if (!apiKey) {
-      throw new Error('NEYNAR_API_KEY not configured');
+      throw new Error("NEYNAR_API_KEY not configured");
     }
     const config = new Configuration({ apiKey });
     neynarClient = new NeynarAPIClient(config);
@@ -18,7 +22,7 @@ export function getNeynarClient() {
   return neynarClient;
 }
 
-type User = WebhookUserCreated['data'];
+type User = WebhookUserCreated["data"];
 
 export async function getNeynarUser(fid: number): Promise<User | null> {
   try {
@@ -26,8 +30,20 @@ export async function getNeynarUser(fid: number): Promise<User | null> {
     const usersResponse = await client.fetchBulkUsers({ fids: [fid] });
     return usersResponse.users[0];
   } catch (error) {
-    console.error('Error getting Neynar user:', error);
+    console.error("Error getting Neynar user:", error);
     return null;
+  }
+}
+
+export async function getFollowers(fid: number, limit = 25, cursor?: string) {
+  try {
+    const client = getNeynarClient();
+    return await client.fetchUserFollowers({ fid, limit, cursor });
+  } catch (error) {
+    console.error("Error getting followers:", error);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    console.log("error", (error as any)?.response?.data);
+    throw error;
   }
 }
 
@@ -58,9 +74,9 @@ export async function sendNeynarMiniAppNotification({
       target_url: APP_URL,
     };
 
-    const result = await client.publishFrameNotifications({ 
-      targetFids, 
-      notification 
+    const result = await client.publishFrameNotifications({
+      targetFids,
+      notification,
     });
 
     if (result.notification_deliveries.length > 0) {
@@ -73,4 +89,4 @@ export async function sendNeynarMiniAppNotification({
   } catch (error) {
     return { state: "error", error };
   }
-} 
+}

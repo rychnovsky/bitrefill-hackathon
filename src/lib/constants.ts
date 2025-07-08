@@ -1,10 +1,10 @@
 /**
  * Application constants and configuration values.
- * 
+ *
  * This file contains all the configuration constants used throughout the mini app.
  * These values are either sourced from environment variables or hardcoded and provide
  * configuration for the app's appearance, behavior, and integration settings.
- * 
+ *
  * NOTE: This file is automatically updated by the init script.
  * Manual changes may be overwritten during project initialization.
  */
@@ -20,25 +20,26 @@ export const APP_URL = process.env.NEXT_PUBLIC_URL!;
  * The name of the mini app as displayed to users.
  * Used in titles, headers, and app store listings.
  */
-export const APP_NAME = 'Bitrefill Hackathon';
+export const APP_NAME = "Bitrefill Gifter";
 
 /**
  * A brief description of the mini app's functionality.
  * Used in app store listings and metadata.
  */
-export const APP_DESCRIPTION = 'A Farcaster mini app created with Neynar';
+export const APP_DESCRIPTION =
+  "A Farcaster mini app that rewards channel followers with Bitrefill gift cards.";
 
 /**
  * The primary category for the mini app.
  * Used for app store categorization and discovery.
  */
-export const APP_PRIMARY_CATEGORY = 'shopping';
+export const APP_PRIMARY_CATEGORY = "shopping";
 
 /**
  * Tags associated with the mini app.
  * Used for search and discovery in app stores.
  */
-export const APP_TAGS = ['neynar', 'starter-kit', 'demo'];
+export const APP_TAGS = ["bitrefill"];
 
 // --- Asset URLs ---
 /**
@@ -70,23 +71,24 @@ export const APP_SPLASH_BACKGROUND_COLOR = "#f7f7f7";
  * Text displayed on the main action button.
  * Used for the primary call-to-action in the mini app.
  */
-export const APP_BUTTON_TEXT = 'Open Bitrefill Gifter';
+export const APP_BUTTON_TEXT = "Open Bitrefill Gifter";
 
 // --- Integration Configuration ---
 /**
  * Webhook URL for receiving events from Neynar.
- * 
+ *
  * If Neynar API key and client ID are configured, uses the official
  * Neynar webhook endpoint. Otherwise, falls back to a local webhook
  * endpoint for development and testing.
  */
-export const APP_WEBHOOK_URL = process.env.NEYNAR_API_KEY && process.env.NEYNAR_CLIENT_ID 
+export const APP_WEBHOOK_URL =
+  process.env.NEYNAR_API_KEY && process.env.NEYNAR_CLIENT_ID
     ? `https://api.neynar.com/f/app/${process.env.NEYNAR_CLIENT_ID}/event`
     : `${APP_URL}/api/webhook`;
 
 /**
  * Flag to enable/disable wallet functionality.
- * 
+ *
  * When true, wallet-related components and features are rendered.
  * When false, wallet functionality is completely hidden from the UI.
  * Useful for mini apps that don't require wallet integration.
@@ -95,7 +97,7 @@ export const USE_WALLET = true;
 
 /**
  * Flag to enable/disable analytics tracking.
- * 
+ *
  * When true, usage analytics are collected and sent to Neynar.
  * When false, analytics collection is disabled.
  * Useful for privacy-conscious users or development environments.
