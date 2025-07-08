@@ -4,30 +4,34 @@ const BITREFILL_BASE = "https://api.bitrefill.com/v2/";
 
 export async function GET(
   req: NextRequest,
-  context: { params: { path: string[] } }
+  { params }: { params: Promise<{ path: string[] }> }
 ) {
-  return proxyToBitrefill(req, context.params.path);
+  const { path } = await params;
+  return proxyToBitrefill(req, path);
 }
 
 export async function POST(
   req: NextRequest,
-  context: { params: { path: string[] } }
+  { params }: { params: Promise<{ path: string[] }> }
 ) {
-  return proxyToBitrefill(req, context.params.path);
+  const { path } = await params;
+  return proxyToBitrefill(req, path);
 }
 
 export async function PUT(
   req: NextRequest,
-  context: { params: { path: string[] } }
+  { params }: { params: Promise<{ path: string[] }> }
 ) {
-  return proxyToBitrefill(req, context.params.path);
+  const { path } = await params;
+  return proxyToBitrefill(req, path);
 }
 
 export async function DELETE(
   req: NextRequest,
-  context: { params: { path: string[] } }
+  { params }: { params: Promise<{ path: string[] }> }
 ) {
-  return proxyToBitrefill(req, context.params.path);
+  const { path } = await params;
+  return proxyToBitrefill(req, path);
 }
 
 async function proxyToBitrefill(req: NextRequest, path: string[]) {
