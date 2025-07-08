@@ -12,25 +12,25 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  context: { params: { path: string[] } }
+  { params }: { params: { path: string[] } }
 ) {
-  const { params } = await context;
-  return proxyToBitrefill(req, params.path);
+  const { path } = await params;
+  return proxyToBitrefill(req, path);
 }
 
 export async function PUT(
   req: NextRequest,
-  context: { params: { path: string[] } }
+  { params }: { params: { path: string[] } }
 ) {
-  const { params } = await context;
-  return proxyToBitrefill(req, params.path);
+  const { path } = await params;
+  return proxyToBitrefill(req, path);
 }
 
 export async function DELETE(
   req: NextRequest,
-  context: { params: { path: string[] } }
+  { params }: { params: { path: string[] } }
 ) {
-  const { params } = await context;
+  const { path } = await params;
   return proxyToBitrefill(req, params.path);
 }
 

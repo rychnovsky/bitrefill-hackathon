@@ -14,8 +14,10 @@
  */
 import { useCallback, useState } from "react";
 import { RandomWinnerSelector } from "~/components/ui/RandomWinnerSelector";
+import ProductPurchase from "../ProductPurchase";
+
 export function HomeTab() {
-  const [step, setStep] = useState<1 | 2>(1);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   const [channelId, setChannelId] = useState("");
   const [mode, setMode] = useState<"followers" | "members">("members");
   const [fetchTrigger, setFetchTrigger] = useState(0);
@@ -35,10 +37,10 @@ export function HomeTab() {
 
   const resetForm = useCallback(() => {
     setChannelId("");
-    setMode("followers");
+    setMode("members");
     setFetchTrigger(0);
     setSubmittedChannelId(undefined);
-    setSubmittedMode("followers");
+    setSubmittedMode("members");
     setStep(1);
   }, []);
 
@@ -57,6 +59,7 @@ export function HomeTab() {
             >
               1
             </div>
+            <div className="w-8 h-1 bg-gray-800" />
             <div
               className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
                 step >= 2
@@ -66,9 +69,23 @@ export function HomeTab() {
             >
               2
             </div>
+            <div className="w-8 h-1 bg-gray-800" />
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                step >= 3
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-300 text-gray-600"
+              }`}
+            >
+              3
+            </div>
           </div>
           <div className="mt-2 text-sm text-gray-600">
-            {step === 1 ? "Enter channel details" : "View winner"}
+            {step === 1
+              ? "Enter channel details"
+              : step === 2
+              ? "View winner"
+              : "Reward selection"}
           </div>
         </div>
         {step === 1 ? (
@@ -110,14 +127,28 @@ export function HomeTab() {
               </button>
             </div>
           </>
+        ) : step === 2 ? (
+          <>
+            <RandomWinnerSelector
+              channelId={submittedChannelId}
+              mode={submittedMode}
+              fetchTrigger={fetchTrigger}
+              onComplete={() => setStep(3)}
+            />
+          </>
         ) : (
-          <RandomWinnerSelector
-            channelId={submittedChannelId}
-            mode={submittedMode}
-            fetchTrigger={fetchTrigger}
-            onReset={resetForm}
-          />
+          <>
+            <ProductPurchase />
+          </>
         )}
+        {step > 1 ? (
+          <button
+            className="mt-2 px-4 py-0 text-red-700 text-sm opacity-50"
+            onClick={resetForm}
+          >
+            Start over
+          </button>
+        ) : null}
         <p className="text-sm text-gray-500 mt-4">Powered by Bitrefill</p>
       </div>
     </div>

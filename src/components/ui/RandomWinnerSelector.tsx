@@ -31,12 +31,12 @@ export function RandomWinnerSelector({
   channelId,
   mode,
   fetchTrigger,
-  onReset,
+  onComplete,
 }: {
   channelId?: string;
   mode: "followers" | "members";
   fetchTrigger: number;
-  onReset: () => void;
+  onComplete: (winner: { fid: number; username: string }) => void;
 }) {
   const [count, setCount] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
@@ -145,6 +145,11 @@ export function RandomWinnerSelector({
 
   if (!channelId) return null;
 
+  const hasWinnerData =
+    winnerDetails &&
+    typeof winnerDetails === "object" &&
+    winnerDetails !== null;
+
   const renderWinnerDetails = () => {
     if (loadingWinnerDetails || loading) {
       return <div className="">Loading winner details...</div>;
@@ -152,11 +157,7 @@ export function RandomWinnerSelector({
     if (error) {
       return <div className="text-red-500">Error: {error}</div>;
     }
-    if (
-      winnerDetails &&
-      typeof winnerDetails === "object" &&
-      winnerDetails !== null
-    ) {
+    if (hasWinnerData) {
       return (
         <>
           <h2 className="text-lg font-bold mb-4">Winner Selected!</h2>
@@ -197,11 +198,17 @@ export function RandomWinnerSelector({
   };
 
   return (
-    <div className="mt-4 mb-4 text-xl font-semibold border-[1px] border-gray-800 rounded-lg p-4 py-8">
+    <div className="mt-4 mb-4 border-[1px] border-gray-800 rounded-lg p-4 py-8">
       {renderWinnerDetails()}
-      <button className="mt-4 px-4 py-0 text-red-600 text-sm" onClick={onReset}>
-        X Reset
-      </button>
+      {!!hasWinnerData ? (
+        <button
+          onClick={() => onComplete({ fid: 1, username: "test" })}
+          className="mt-2 px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 w-full"
+          disabled={!winner}
+        >
+          Continue to gift card
+        </button>
+      ) : null}
     </div>
   );
 }
