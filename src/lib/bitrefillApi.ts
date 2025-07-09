@@ -116,7 +116,7 @@ async function axiosWithRetry<T>(
     try {
       const response = await axios(config);
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (
         axios.isAxiosError(error) &&
         error.response?.status === 429 &&
