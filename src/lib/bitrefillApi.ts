@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosRequestConfig } from "axios";
 import { getBitrefillApiKey } from "./bitrefillApiKey";
 
 // --- Product Types ---
@@ -108,7 +108,10 @@ export interface BalanceResponse {
   data: BalanceData;
 }
 
-async function axiosWithRetry<T>(config: any, retries = 3): Promise<T> {
+async function axiosWithRetry<T>(
+  config: AxiosRequestConfig,
+  retries = 3
+): Promise<T> {
   for (let attempt = 0; attempt < retries; attempt++) {
     try {
       const response = await axios(config);
