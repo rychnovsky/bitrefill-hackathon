@@ -1,3 +1,4 @@
+import axios from "axios";
 import { getBitrefillApiKey } from "./bitrefillApiKey";
 
 // --- Product Types ---
@@ -42,7 +43,7 @@ export interface ProductResponse {
 export interface CreateInvoiceProduct {
   product_id: string;
   package_id: string;
-  value: number;
+  value?: number;
   quantity: number;
 }
 
@@ -107,33 +108,50 @@ export interface BalanceResponse {
   data: BalanceData;
 }
 
+async function axiosWithRetry<T>(config: any, retries = 3): Promise<T> {
+  for (let attempt = 0; attempt < retries; attempt++) {
+    try {
+      const response = await axios(config);
+      return response.data;
+    } catch (error: any) {
+      if (
+        axios.isAxiosError(error) &&
+        error.response?.status === 429 &&
+        attempt < retries - 1
+      ) {
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        continue;
+      }
+      throw error;
+    }
+  }
+  throw new Error("Max retries reached");
+}
+
 export async function pingBitrefill(): Promise<unknown> {
   const apiKey = getBitrefillApiKey();
   if (!apiKey) throw new Error("Bitrefill API key not set");
-  const response = await fetch("/api/bitrefill/ping", {
+  return axiosWithRetry({
+    url: "/api/bitrefill/ping",
+    method: "GET",
     headers: {
       "Content-Type": "application/json",
       "x-bitrefill-api-key": apiKey,
     },
   });
-  if (!response.ok) throw new Error("Bitrefill API ping failed");
-  return await response.json();
 }
 
 export async function getProduct(productId: string): Promise<ProductResponse> {
   const apiKey = getBitrefillApiKey();
   if (!apiKey) throw new Error("Bitrefill API key not set");
-  const response = await fetch(
-    `/api/bitrefill/products/${encodeURIComponent(productId)}`,
-    {
-      headers: {
-        "Content-Type": "application/json",
-        "x-bitrefill-api-key": apiKey,
-      },
-    }
-  );
-  if (!response.ok) throw new Error("Bitrefill API getProduct failed");
-  return await response.json();
+  return axiosWithRetry({
+    url: `/api/bitrefill/products/${encodeURIComponent(productId)}`,
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "x-bitrefill-api-key": apiKey,
+    },
+  });
 }
 
 export async function createInvoice(
@@ -141,27 +159,26 @@ export async function createInvoice(
 ): Promise<CreateInvoiceResponse> {
   const apiKey = getBitrefillApiKey();
   if (!apiKey) throw new Error("Bitrefill API key not set");
-  const response = await fetch("/api/bitrefill/invoices", {
+  return axiosWithRetry({
+    url: "/api/bitrefill/invoices",
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "x-bitrefill-api-key": apiKey,
     },
-    body: JSON.stringify(req),
+    data: req,
   });
-  if (!response.ok) throw new Error("Bitrefill API createInvoice failed");
-  return await response.json();
 }
 
 export async function getBalance(): Promise<BalanceResponse> {
   const apiKey = getBitrefillApiKey();
   if (!apiKey) throw new Error("Bitrefill API key not set");
-  const response = await fetch("/api/bitrefill/accounts/balance", {
+  return axiosWithRetry({
+    url: "/api/bitrefill/accounts/balance",
+    method: "GET",
     headers: {
       "Content-Type": "application/json",
       "x-bitrefill-api-key": apiKey,
     },
   });
-  if (!response.ok) throw new Error("Bitrefill API getBalance failed");
-  return await response.json();
 }

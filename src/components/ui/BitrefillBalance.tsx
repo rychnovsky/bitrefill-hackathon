@@ -48,8 +48,13 @@ export function BitrefillBalance() {
   }
   if (status === "success") {
     return (
-      <div className="text-green-600 text-sm">
-        Balance: {balance} {currency}
+      <div>
+        <div className="text-green-600 text-sm">
+          Balance: {balance} {currency}
+        </div>
+        <a href="https://www.bitrefill.com/account/topup" target="_blank">
+          <button className="text-blue-600 text-sm underline">Top up</button>
+        </a>
       </div>
     );
   }

@@ -29,13 +29,13 @@ interface WinnerUser {
 
 export function RandomWinnerSelector({
   channelId,
+  group,
   mode,
-  fetchTrigger,
   onComplete,
 }: {
   channelId?: string;
-  mode: "followers" | "members";
-  fetchTrigger: number;
+  group: "followers" | "members";
+  mode: "random";
   onComplete: (winner: { fid: number; username: string }) => void;
 }) {
   const [count, setCount] = useState<number | null>(null);
@@ -59,7 +59,7 @@ export function RandomWinnerSelector({
       let cursor: string | undefined = undefined;
       let allItems: unknown[] = [];
       const baseUrl =
-        mode === "members"
+        group === "members"
           ? `https://api.farcaster.xyz/fc/channel-members?channel_id=${encodeURIComponent(
               channelId!
             )}`
@@ -75,7 +75,7 @@ export function RandomWinnerSelector({
             url.searchParams.set("cursor", cursor);
           }
           const res = await fetch(url.toString());
-          if (!res.ok) throw new Error(`Error fetching channel ${mode}`);
+          if (!res.ok) throw new Error(`Error fetching channel ${group}`);
           const data = await res.json();
           const pageItems = Array.isArray(data.result?.users)
             ? data.result.users
@@ -104,7 +104,7 @@ export function RandomWinnerSelector({
     return () => {
       cancelled = true;
     };
-  }, [fetchTrigger]);
+  }, []);
 
   const pickWinner = useCallback(() => {
     if (items.length > 0) {
@@ -125,6 +125,7 @@ export function RandomWinnerSelector({
     const fid = extractFid(winner);
     if (!fid) return;
     setLoadingWinnerDetails(true);
+    setWinnerDetails(null);
     fetch(`/api/users?fids=${fid}`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch user details");
@@ -161,8 +162,11 @@ export function RandomWinnerSelector({
       return (
         <>
           <h2 className="text-lg font-bold mb-4">Winner Selected!</h2>
+          <div className="text-sm text-gray-600 mb-2">
+            Channel {group.charAt(0).toUpperCase() + group.slice(1)}: {count}
+          </div>
           <div className="text-sm text-gray-600 mb-4">
-            Channel {mode.charAt(0).toUpperCase() + mode.slice(1)}: {count}
+            {mode.charAt(0).toUpperCase() + mode.slice(1)} winner:
           </div>
           {loadingWinnerDetails ? (
             <div className="text-blue-600">Loading winner details...</div>
@@ -170,23 +174,23 @@ export function RandomWinnerSelector({
             typeof winnerDetails === "object" &&
             winnerDetails !== null ? (
             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <div className="text-lg font-bold text-green-800 mb-2">
-                🎉 Winner
-              </div>
-              <div className="text-green-700 text-sm">
-                {(() => {
-                  const user = winnerDetails as WinnerUser;
-                  return (
-                    <>
+              {(() => {
+                const user = winnerDetails as WinnerUser;
+                return (
+                  <>
+                    <div className="text-lg font-bold text-green-800 mb-2">
+                      🎉 @{user.username}
+                    </div>
+                    <div className="text-green-700 text-sm">
                       {user.username && <div>Username: @{user.username}</div>}
                       {user.display_name && (
                         <div>Name: {user.display_name}</div>
                       )}
                       {user.fid && <div>FID: {user.fid}</div>}
-                    </>
-                  );
-                })()}
-              </div>
+                    </div>
+                  </>
+                );
+              })()}
             </div>
           ) : (
             <div className="text-gray-600">No winner details available</div>

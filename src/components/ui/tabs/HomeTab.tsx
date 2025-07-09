@@ -13,34 +13,36 @@
  * ```
  */
 import { useCallback, useState } from "react";
+import ProductPurchase from "~/components/ui/ProductPurchase";
+import RulesDefinition, { Group, Mode } from "~/components/ui/RulesDefinition";
 import { RandomWinnerSelector } from "~/components/ui/RandomWinnerSelector";
-import ProductPurchase from "../ProductPurchase";
+import { CreateInvoiceResponse } from "~/lib/bitrefillApi";
 
 export function HomeTab() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
+  // Rules
   const [channelId, setChannelId] = useState("");
-  const [mode, setMode] = useState<"followers" | "members">("members");
-  const [fetchTrigger, setFetchTrigger] = useState(0);
-  const [submittedChannelId, setSubmittedChannelId] = useState<
-    string | undefined
-  >(undefined);
-  const [submittedMode, setSubmittedMode] = useState<"followers" | "members">(
-    "members"
-  );
+  const [group, setGroup] = useState<Group>("members");
+  const [mode, setMode] = useState<Mode>("random");
+  // Winner selection
+  const [winner, setWinner] = useState<{
+    fid: number;
+    username: string;
+  } | null>(null);
+  // Product purchase
+  const [purchasedProduct, setPurchasedProduct] =
+    useState<CreateInvoiceResponse | null>(null);
 
-  const handleFetch = () => {
-    setSubmittedChannelId(channelId.trim() || undefined);
-    setSubmittedMode(mode);
-    setFetchTrigger((n) => n + 1);
+  const goToStepWinnerSelection = () => {
     setStep(2);
   };
 
   const resetForm = useCallback(() => {
     setChannelId("");
-    setMode("members");
-    setFetchTrigger(0);
-    setSubmittedChannelId(undefined);
-    setSubmittedMode("members");
+    setGroup("members");
+    setMode("random");
+    setWinner(null);
+    setPurchasedProduct(null);
     setStep(1);
   }, []);
 
@@ -88,57 +90,38 @@ export function HomeTab() {
               : "Reward selection"}
           </div>
         </div>
+
         {step === 1 ? (
           <>
-            <p className="text-lg mb-8">
-              Enter a Farcaster channel ID to pick a random winner.
-            </p>
-            <div className="flex flex-col items-start gap-2">
-              <label htmlFor="channelId" className="text-sm text-gray-500">
-                Channel ID:
-              </label>
-              <input
-                type="text"
-                placeholder="Enter channel ID"
-                value={channelId}
-                onChange={(e) => setChannelId(e.target.value)}
-                className="px-3 py-2 border rounded w-full text-black"
-                id="channelId"
-              />
-              <label htmlFor="mode" className="text-sm text-gray-500">
-                Mode:
-              </label>
-              <select
-                value={mode}
-                onChange={(e) =>
-                  setMode(e.target.value as "followers" | "members")
-                }
-                className="px-3 py-2 border rounded w-full text-black"
-              >
-                <option value="followers">Followers</option>
-                <option value="members">Members</option>
-              </select>
-              <button
-                onClick={handleFetch}
-                className="mt-2 px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 w-full"
-                disabled={!channelId.trim()}
-              >
-                Pick random winner
-              </button>
-            </div>
+            <RulesDefinition
+              channelId={channelId}
+              group={group}
+              mode={mode}
+              setChannelId={setChannelId}
+              setGroup={setGroup}
+              setMode={setMode}
+              onComplete={goToStepWinnerSelection}
+            />
           </>
         ) : step === 2 ? (
           <>
             <RandomWinnerSelector
-              channelId={submittedChannelId}
-              mode={submittedMode}
-              fetchTrigger={fetchTrigger}
-              onComplete={() => setStep(3)}
+              channelId={channelId.trim()}
+              group={group}
+              mode={mode}
+              onComplete={(winner) => {
+                setWinner(winner);
+                setStep(3);
+              }}
             />
           </>
         ) : (
           <>
-            <ProductPurchase />
+            <ProductPurchase
+              onComplete={(res) => {
+                setPurchasedProduct(res);
+              }}
+            />
           </>
         )}
         {step > 1 ? (

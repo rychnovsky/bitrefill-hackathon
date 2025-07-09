@@ -1,7 +1,16 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { createInvoice, getProduct, ProductResponse } from "~/lib/bitrefillApi";
+import {
+  createInvoice,
+  CreateInvoiceResponse,
+  getProduct,
+  ProductResponse,
+} from "~/lib/bitrefillApi";
 
-const ProductPurchase = () => {
+type Props = {
+  onComplete: (res: CreateInvoiceResponse) => void;
+};
+
+const ProductPurchase: React.FC<Props> = ({ onComplete }) => {
   const [product, setProduct] = useState<ProductResponse | null>(null);
   const [loadingProduct, setLoadingProduct] = useState(false);
   const [productError, setProductError] = useState<string | null>(null);
@@ -10,7 +19,7 @@ const ProductPurchase = () => {
     setLoadingProduct(true);
     setProductError(null);
     try {
-      const data = await getProduct("test-gift-card-link");
+      const data = await getProduct("affiliate-tester");
       setProduct(data);
     } catch {
       setProductError("Failed to load reward product.");
@@ -30,7 +39,6 @@ const ProductPurchase = () => {
         {
           product_id: product.data.id,
           package_id: product.data.packages[0].id,
-          value: parseInt(product.data.packages[0].value),
           quantity: 1,
         },
       ],
@@ -38,7 +46,12 @@ const ProductPurchase = () => {
       payment_method: "balance",
     });
     console.log("data", data);
-  }, [product]);
+    onComplete(data);
+  }, [product, onComplete]);
+
+  const value = product?.data.packages[0]?.value;
+  const price = (product?.data.packages[0]?.price ?? 0) / 1_000;
+  const currency = product?.data.currency;
 
   return (
     <>
@@ -50,7 +63,9 @@ const ProductPurchase = () => {
       ) : product && product.data ? (
         <div className="border-[1px] border-gray-800 rounded-lg p-4 py-8 flex flex-col items-center">
           <div className="mb-2 font-semibold">{product.data.name}</div>
-          <div className="mb-2">{product.data.packages[0]?.value}</div>
+          <div className="mb-2">
+            Value: {value} {currency}
+          </div>
           {product.data.image && (
             <img src={product.data.image} className="mx-auto mb-2 max-h-32" />
           )}
@@ -62,15 +77,17 @@ const ProductPurchase = () => {
           </div>
           {product.data.packages && (
             <div className="text-sm text-gray-700 mb-1">
-              Price: {product.data.packages[0]?.price} {product.data.currency}
+              Price: {price} {currency}
             </div>
           )}
-          {product.data.range && (
-            <div className="text-sm text-gray-700 mb-1">
-              Range: {product.data.range.min} - {product.data.range.max} (step{" "}
-              {product.data.range.step})
-            </div>
-          )}
+
+          <div className="w-full h-[0.5px] bg-gray-800 my-4" />
+
+          <span className="text-xs text-gray-500">
+            The amount of {price} {currency} will be deducted from your
+            Bitrefill balance.
+          </span>
+
           <button
             className="mt-6 px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 w-full"
             onClick={handlePurchase}

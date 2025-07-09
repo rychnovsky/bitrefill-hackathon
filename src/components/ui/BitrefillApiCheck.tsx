@@ -23,7 +23,8 @@ export function BitrefillApiCheck() {
         setStatus("success");
         setMessage("Bitrefill API key is valid.");
       })
-      .catch(() => {
+      .catch((e) => {
+        console.error(e);
         setStatus("error");
         setMessage("Bitrefill API key is invalid or network error.");
       });
