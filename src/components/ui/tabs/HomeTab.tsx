@@ -13,13 +13,14 @@
  * ```
  */
 import { useCallback, useState } from "react";
-import ProductPurchase from "~/components/ui/ProductPurchase";
 import RulesDefinition, { Group, Mode } from "~/components/ui/RulesDefinition";
+import ProductPurchase from "~/components/ui/ProductPurchase";
 import { RandomWinnerSelector } from "~/components/ui/RandomWinnerSelector";
+import RewardDistribution from "~/components/ui/RewardDistribution";
 import { CreateInvoiceResponse } from "~/lib/bitrefillApi";
 
 export function HomeTab() {
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   // Rules
   const [channelId, setChannelId] = useState("");
   const [group, setGroup] = useState<Group>("members");
@@ -81,13 +82,25 @@ export function HomeTab() {
             >
               3
             </div>
+            <div className="w-8 h-1 bg-gray-800" />
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                step >= 4
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-300 text-gray-600"
+              }`}
+            >
+              4
+            </div>
           </div>
           <div className="mt-2 text-sm text-gray-600">
             {step === 1
               ? "Enter channel details"
               : step === 2
               ? "View winner"
-              : "Reward selection"}
+              : step === 3
+              ? "Reward selection"
+              : "Reward distribution"}
           </div>
         </div>
 
@@ -115,13 +128,20 @@ export function HomeTab() {
               }}
             />
           </>
-        ) : (
+        ) : step === 3 ? (
           <>
             <ProductPurchase
               onComplete={(res) => {
                 setPurchasedProduct(res);
+                setStep(4);
               }}
             />
+          </>
+        ) : (
+          <>
+            {purchasedProduct && (
+              <RewardDistribution purchasedProduct={purchasedProduct} />
+            )}
           </>
         )}
         {step > 1 ? (
