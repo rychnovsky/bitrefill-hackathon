@@ -139,9 +139,12 @@ export function HomeTab() {
           </>
         ) : (
           <>
-            {purchasedProduct && (
-              <RewardDistribution purchasedProduct={purchasedProduct} />
-            )}
+            {purchasedProduct && winner ? (
+              <RewardDistribution
+                purchasedProduct={purchasedProduct}
+                winner={winner}
+              />
+            ) : null}
           </>
         )}
         {step > 1 ? (

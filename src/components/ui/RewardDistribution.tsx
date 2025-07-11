@@ -1,23 +1,66 @@
-import React from "react";
-import { CreateInvoiceResponse } from "~/lib/bitrefillApi";
+import { sdk } from "@farcaster/frame-sdk";
+import React, { useEffect, useState } from "react";
+import {
+  CreateInvoiceResponse,
+  getOrderById,
+  GetOrderByIdResponse,
+} from "~/lib/bitrefillApi";
 
 type Props = {
   purchasedProduct: CreateInvoiceResponse;
+  winner: {
+    fid: number;
+    username: string;
+  };
 };
 
-const RewardDistribution: React.FC<Props> = ({ purchasedProduct }) => {
+const RewardDistribution: React.FC<Props> = ({ purchasedProduct, winner }) => {
+  const [orderDetails, setOrderDetails] = useState<GetOrderByIdResponse | null>(
+    null
+  );
+  const invoice = purchasedProduct.data;
+
+  const order = invoice.orders[0];
+
+  useEffect(() => {
+    if (!order?.id) {
+      return;
+    }
+    getOrderById(order.id).then((orderDetails) => {
+      setOrderDetails(orderDetails);
+    });
+  }, [order.id]);
+
+  const notifyUser = async () => {
+    await sdk.actions.composeCast({
+      text: `User @${winner.username} has been drawn as the winner of the Bitrefill gift card. Redemption code: ${orderDetails?.data.redemption_info.code}`,
+      embeds: ["https://bitrefill.com/gift-card.png"],
+    });
+  };
+
   return (
     <>
       {/* Step 4: Show purchased product details */}
-      <div className="border rounded-lg p-4 bg-gray-50">
-        <h2 className="text-lg font-bold mb-4">Purchase Complete</h2>
-        {purchasedProduct ? (
-          <pre className="text-left text-xs whitespace-pre-wrap break-all">
-            {JSON.stringify(purchasedProduct, null, 2)}
-          </pre>
-        ) : (
-          <div className="text-red-600">No purchase data.</div>
-        )}
+      <div className="border-[1px] border-gray-800 rounded-lg p-4 py-8 flex flex-col items-center">
+        <h2 className="text-lg font-bold mb-4">Gift Card Purchased</h2>
+        {orderDetails?.data.redemption_info.instructions}
+        <div className="text-sm text-gray-500 mt-2">Redemption code:</div>
+        <div
+          className="text-sm font-bold"
+          onClick={() => {
+            navigator.clipboard.writeText(
+              orderDetails?.data.redemption_info.code ?? ""
+            );
+          }}
+        >
+          {orderDetails?.data.redemption_info.code}
+        </div>
+        <button
+          className="mt-6 px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 w-full"
+          onClick={notifyUser}
+        >
+          Share publically
+        </button>
       </div>
     </>
   );

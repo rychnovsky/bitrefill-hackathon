@@ -53,6 +53,39 @@ export interface CreateInvoiceRequest {
   payment_method: "balance" | "bitcoin";
 }
 
+type InvoiceData = {
+  id: string;
+  created_time: string;
+  completed_time: string;
+  status: string;
+  user: {
+    id: string;
+    email: string;
+  };
+  payment: {
+    method: string;
+    address: string;
+    currency: string;
+    price: number;
+    status: string;
+    commission: number;
+  };
+  orders: Array<{
+    id: string;
+    status: string;
+    product: {
+      id: string;
+      name: string;
+      value: string;
+      currency: string;
+      image: string;
+      _href: string;
+    };
+    created_time: string;
+    delivered_time: string;
+  }>;
+};
+
 export interface CreateInvoiceResponse {
   meta: {
     products: CreateInvoiceProduct[];
@@ -60,38 +93,7 @@ export interface CreateInvoiceResponse {
     auto_pay: boolean;
     _endpoint: string;
   };
-  data: {
-    id: string;
-    created_time: string;
-    completed_time: string;
-    status: string;
-    user: {
-      id: string;
-      email: string;
-    };
-    payment: {
-      method: string;
-      address: string;
-      currency: string;
-      price: number;
-      status: string;
-      commission: number;
-    };
-    orders: Array<{
-      id: string;
-      status: string;
-      product: {
-        id: string;
-        name: string;
-        value: string;
-        currency: string;
-        image: string;
-        _href: string;
-      };
-      created_time: string;
-      delivered_time: string;
-    }>;
-  };
+  data: InvoiceData;
 }
 
 export interface BalanceMeta {
@@ -106,6 +108,52 @@ export interface BalanceData {
 export interface BalanceResponse {
   meta: BalanceMeta;
   data: BalanceData;
+}
+
+export interface GetInvoiceByIdResponse {
+  meta: {
+    id: string;
+    _endpoint: string;
+  };
+  data: InvoiceData;
+}
+
+type OrderData = {
+  id: string;
+  status: string;
+  product: {
+    id: string;
+    name: string;
+    value: string;
+    currency: string;
+    image: string;
+    _href: string;
+  };
+  created_time: string;
+  delivered_time: string;
+  redemption_info: {
+    code: string;
+    extra_fields: object;
+    instructions: string;
+    other: string;
+  };
+  commission: number;
+  user: {
+    id: string;
+    email: string;
+  };
+  invoice: {
+    id: string;
+    _href: string;
+  };
+};
+
+export interface GetOrderByIdResponse {
+  meta: {
+    id: string;
+    _endpoint: string;
+  };
+  data: OrderData;
 }
 
 async function axiosWithRetry<T>(
@@ -178,6 +226,36 @@ export async function getBalance(): Promise<BalanceResponse> {
   if (!apiKey) throw new Error("Bitrefill API key not set");
   return axiosWithRetry({
     url: "/api/bitrefill/accounts/balance",
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "x-bitrefill-api-key": apiKey,
+    },
+  });
+}
+
+export async function getInvoiceById(
+  invoiceId: string
+): Promise<GetInvoiceByIdResponse> {
+  const apiKey = getBitrefillApiKey();
+  if (!apiKey) throw new Error("Bitrefill API key not set");
+  return axiosWithRetry({
+    url: `/api/bitrefill/invoices/${encodeURIComponent(invoiceId)}`,
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "x-bitrefill-api-key": apiKey,
+    },
+  });
+}
+
+export async function getOrderById(
+  orderId: string
+): Promise<GetOrderByIdResponse> {
+  const apiKey = getBitrefillApiKey();
+  if (!apiKey) throw new Error("Bitrefill API key not set");
+  return axiosWithRetry({
+    url: `/api/bitrefill/orders/${encodeURIComponent(orderId)}`,
     method: "GET",
     headers: {
       "Content-Type": "application/json",

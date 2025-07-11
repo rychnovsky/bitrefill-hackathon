@@ -67,7 +67,13 @@ const ProductPurchase: React.FC<Props> = ({ onComplete }) => {
             Value: {value} {currency}
           </div>
           {product.data.image && (
-            <img src={product.data.image} className="mx-auto mb-2 max-h-32" />
+            <img
+              src={product.data.image}
+              className="mx-auto mb-2 max-h-32"
+              onError={(e) => {
+                e.currentTarget.src = "https://bitrefill.com/gift-card.png";
+              }}
+            />
           )}
           <div className="text-sm text-gray-700 mb-1">
             Country: {product.data.country_name} ({product.data.country_code})

@@ -27,6 +27,30 @@ interface WinnerUser {
   fid?: number | string;
 }
 
+interface ChannelMember {
+  fid: number;
+  memberAt?: number;
+}
+
+interface NeynarUserDetails {
+  fid: number;
+  username: string;
+  display_name?: string;
+  pfp_url?: string;
+  custody_address?: string;
+  follower_count?: number;
+  following_count?: number;
+  verified_addresses?: {
+    eth_addresses?: string[];
+    sol_addresses?: string[];
+    primary?: {
+      eth_address?: string;
+      sol_address?: string;
+    };
+  };
+  score?: number;
+}
+
 export function RandomWinnerSelector({
   channelId,
   group,
@@ -41,9 +65,11 @@ export function RandomWinnerSelector({
   const [count, setCount] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [items, setItems] = useState<unknown[]>([]);
-  const [winner, setWinner] = useState<unknown | null>(null);
-  const [winnerDetails, setWinnerDetails] = useState<unknown | null>(null);
+  const [items, setItems] = useState<ChannelMember[]>([]);
+  const [winner, setWinner] = useState<ChannelMember | null>(null);
+  const [winnerDetails, setWinnerDetails] = useState<NeynarUserDetails | null>(
+    null
+  );
   const [loadingWinnerDetails, setLoadingWinnerDetails] = useState(false);
 
   useEffect(() => {
@@ -57,7 +83,7 @@ export function RandomWinnerSelector({
       setWinner(null);
       let total = 0;
       let cursor: string | undefined = undefined;
-      let allItems: unknown[] = [];
+      let allItems: ChannelMember[] = [];
       const baseUrl =
         group === "members"
           ? `https://api.farcaster.xyz/fc/channel-members?channel_id=${encodeURIComponent(
@@ -204,9 +230,14 @@ export function RandomWinnerSelector({
   return (
     <div className="mt-4 mb-4 border-[1px] border-gray-800 rounded-lg p-4 py-8">
       {renderWinnerDetails()}
-      {!!hasWinnerData ? (
+      {!!hasWinnerData && !!winnerDetails ? (
         <button
-          onClick={() => onComplete({ fid: 1, username: "test" })}
+          onClick={() =>
+            onComplete({
+              fid: winnerDetails?.fid,
+              username: winnerDetails?.username,
+            })
+          }
           className="mt-2 px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 w-full"
           disabled={!winner}
         >
