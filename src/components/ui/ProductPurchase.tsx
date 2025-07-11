@@ -5,6 +5,7 @@ import {
   getProduct,
   ProductResponse,
 } from "~/lib/bitrefillApi";
+import { getBitrefillProduct } from "~/lib/bitrefillProductSelection";
 
 type Props = {
   onComplete: (res: CreateInvoiceResponse) => void;
@@ -19,7 +20,7 @@ const ProductPurchase: React.FC<Props> = ({ onComplete }) => {
     setLoadingProduct(true);
     setProductError(null);
     try {
-      const data = await getProduct("affiliate-tester");
+      const data = await getProduct(getBitrefillProduct());
       setProduct(data);
     } catch {
       setProductError("Failed to load reward product.");
