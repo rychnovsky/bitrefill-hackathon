@@ -12,9 +12,14 @@ type Props = {
     fid: number;
     username: string;
   };
+  channelKey: string;
 };
 
-const RewardDistribution: React.FC<Props> = ({ purchasedProduct, winner }) => {
+const RewardDistribution: React.FC<Props> = ({
+  purchasedProduct,
+  winner,
+  channelKey,
+}) => {
   const [orderDetails, setOrderDetails] = useState<GetOrderByIdResponse | null>(
     null
   );
@@ -33,8 +38,9 @@ const RewardDistribution: React.FC<Props> = ({ purchasedProduct, winner }) => {
 
   const notifyUser = async () => {
     await sdk.actions.composeCast({
-      text: `User @${winner.username} has been drawn as the winner of the Bitrefill gift card. Redemption code: ${orderDetails?.data.redemption_info.code}`,
+      text: `User @${winner.username} has been drawn as the winner of the Bitrefill gift card. Congrats!`,
       embeds: ["https://bitrefill.com/gift-card.png"],
+      channelKey,
     });
   };
 
@@ -59,7 +65,7 @@ const RewardDistribution: React.FC<Props> = ({ purchasedProduct, winner }) => {
           className="mt-6 px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 w-full"
           onClick={notifyUser}
         >
-          Share publically
+          Share winner
         </button>
       </div>
     </>

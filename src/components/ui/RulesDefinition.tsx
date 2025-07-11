@@ -1,4 +1,5 @@
 import React from "react";
+import { hasBitrefillApiKey } from "~/lib/bitrefillApiKey";
 
 export type Group = "followers" | "members";
 export type Mode = "random";
@@ -22,11 +23,23 @@ const RulesDefinition = ({
   setMode,
   onComplete,
 }: Props) => {
+  const hasApiKey = hasBitrefillApiKey();
+
   return (
     <>
       <p className="text-lg mb-8">
         Enter a Farcaster channel ID to pick a winner of gift card.
       </p>
+      {!hasApiKey && (
+        <div
+          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
+          role="alert"
+        >
+          <span className="block sm:inline">
+            Please set a Bitrefill API key in the settings tab.
+          </span>
+        </div>
+      )}
       <div className="flex flex-col items-start gap-2">
         <label htmlFor="channelId" className="text-sm text-gray-500">
           Channel ID:
@@ -63,7 +76,7 @@ const RulesDefinition = ({
         <button
           onClick={() => onComplete({ channelId, group, mode })}
           className="mt-2 px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 w-full"
-          disabled={!channelId.trim()}
+          disabled={!channelId.trim() || !hasApiKey}
         >
           Pick winner
         </button>

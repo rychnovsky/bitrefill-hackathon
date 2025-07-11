@@ -119,7 +119,7 @@ export function HomeTab() {
         ) : step === 2 ? (
           <>
             <RandomWinnerSelector
-              channelId={channelId.trim()}
+              channelId={channelId.trim().toLowerCase()}
               group={group}
               mode={mode}
               onComplete={(winner) => {
@@ -143,6 +143,7 @@ export function HomeTab() {
               <RewardDistribution
                 purchasedProduct={purchasedProduct}
                 winner={winner}
+                channelKey={channelId.trim().toLowerCase()}
               />
             ) : null}
           </>
